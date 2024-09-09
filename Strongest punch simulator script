@@ -2,7 +2,7 @@
 local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
 
 -- Create the main window
-local Window = OrionLib:MakeWindow({Name = "Etherbyte Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "AutoFarmConfig"})
+local Window = OrionLib:MakeWindow({Name = "Etherbyte Hub", HidePremium = false, SaveConfig = true, IntroText = "Etherbyte Hub", ConfigFolder = "AutoFarmConfig"})
 
 -- Variables
 local autoFarmOrbs = false
