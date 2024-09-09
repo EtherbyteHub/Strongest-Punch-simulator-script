@@ -1,0 +1,98 @@
+-- Load Orion Lib
+local OrionLib = loadstring(game:HttpGet(('https://raw.githubusercontent.com/shlexware/Orion/main/source')))()
+
+-- Create the main window
+local Window = OrionLib:MakeWindow({Name = "Etherbyte Hub", HidePremium = false, SaveConfig = true, ConfigFolder = "AutoFarmConfig"})
+
+-- Variables
+local autoFarmOrbs = false
+local autoPunch = false
+local teleportToOrbsThread
+
+-- Create a tab for farming options
+local FarmTab = Window:MakeTab({
+    Name = "Auto Farm",
+    Icon = "rbxassetid://4483345998",  -- You can set your own icon
+    PremiumOnly = false
+})
+
+-- Function to teleport to the nearest orb
+local function teleportToOrbs()
+    local rootpart = game.Players.LocalPlayer.Character.HumanoidRootPart
+    while true do
+        if not autoFarmOrbs then
+            break
+        end
+
+        local orbs = workspace.Map.Stages.Boosts:GetDescendants()
+        local nearestOrb = nil
+        local nearestDistance = math.huge
+
+        for _, orb in pairs(orbs) do
+            if orb:IsA("BasePart") then
+                local distance = (rootpart.Position - orb.Position).Magnitude
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestOrb = orb
+                end
+            end
+        end
+
+        if nearestOrb then
+            rootpart.CFrame = nearestOrb.CFrame
+        end
+
+        -- Reduce the wait time for faster teleportation
+        wait(0.5)  -- Adjusted wait time for faster updates
+    end
+end
+
+-- Function to activate punch
+local function activatePunch()
+    while autoPunch do
+        -- Activate the punch ability
+        local args = {
+            [1] = {
+                [1] = "Activate_Punch"
+            }
+        }
+        game:GetService("ReplicatedStorage").RemoteEvent:FireServer(unpack(args))
+        -- Wait for 0.5 seconds before activating the punch ability again
+        wait(0.5)  -- Adjust this wait time as needed
+    end
+end
+
+-- Toggle for auto farming orbs
+FarmTab:AddToggle({
+    Name = "Auto Farm Orbs",
+    Default = false,
+    Callback = function(value)
+        autoFarmOrbs = value
+        if autoFarmOrbs then
+            -- Start the teleportToOrbs function when the toggle is enabled
+            teleportToOrbsThread = spawn(teleportToOrbs)
+        else
+            -- Stop the teleportToOrbs function when the toggle is disabled
+            if teleportToOrbsThread then
+                teleportToOrbsThread:Kill()
+                teleportToOrbsThread = nil
+            end
+        end
+    end
+})
+
+-- Toggle for auto punching
+FarmTab:AddToggle({
+    Name = "Auto Punch",
+    Default = false,
+    Callback = function(value)
+        autoPunch = value
+        if autoPunch then
+            -- Start the activatePunch function when the toggle is enabled
+            spawn(activatePunch)
+        end
+    end
+})
+
+-- Ensure the window is visible
+OrionLib:Init()
